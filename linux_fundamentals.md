@@ -1,1215 +1,563 @@
-# Linux Fundamentals --- Commands & Concepts Cheat Sheet
+# Linux Fundamentals
 
-> Beginner-focused DevOps/Linux notes based on the uploaded **The
-> Complete Linux Fundamentals Guide**.\
-> The guide covers Linux FHS, CLI commands, file permissions and octal
-> math, process management, networking, `systemctl`, disk utilities, and
-> user administration. fileciteturn0file0L3-L7
+A concise Linux command reference for DevOps beginners.
+
+> **Note:** Commands below are grouped by purpose. Use `man <command>`
+> whenever you need to check options instead of memorizing every flag.
 
 ------------------------------------------------------------------------
 
-# 1. Core Linux Philosophy
+## 1. Linux Basics & System Information
 
-## "Everything is a file"
+  Command      Purpose                              Example
+  ------------ ------------------------------------ ------------
+  `whoami`     Current logged-in user               `whoami`
+  `hostname`   System hostname                      `hostname`
+  `uname`      Kernel information                   `uname`
+  `uname -a`   Detailed system/kernel information   `uname -a`
+  `uptime`     System uptime                        `uptime`
+  `date`       Current date/time                    `date`
+  `history`    Command history                      `history`
+  `clear`      Clear terminal                       `clear`
+  `id`         UID, GID and groups                  `id`
+  `groups`     Groups of a user                     `groups`
+  `free`       Memory usage                         `free`
+  `free -m`    Memory in MB                         `free -m`
+  `df -h`      Disk usage                           `df -h`
+  `nproc`      Number of CPU cores                  `nproc`
+  `top`        Processes/resource usage             `top`
 
-Linux organizes the system into one unified hierarchical filesystem tree
-beginning at `/`.
+### OS information
+
+``` bash
+cat /etc/os-release
+sudo ls /etc/*release
+```
+
+------------------------------------------------------------------------
+
+## 2. Linux File System
+
+Linux follows a hierarchical file system:
 
 ``` text
 /
-└── Linux filesystem
-    ├── /bin
-    ├── /boot
-    ├── /dev
-    ├── /etc
-    ├── /home
-    ├── /mnt
-    ├── /tmp
-    ├── /usr
-    └── /var
+├── bin      → essential commands
+├── boot     → boot files
+├── dev      → device files
+├── etc      → system configuration
+├── home     → user home directories
+├── lib      → shared libraries
+├── media    → removable media
+├── mnt      → temporary mounts
+├── opt      → optional software
+├── proc     → process/kernel information
+├── root     → root user's home
+├── run      → runtime data
+├── sbin     → system administration commands
+├── tmp      → temporary files
+├── usr      → user programs/libraries
+└── var      → variable data/logs
 ```
-
-The important idea is that Linux does not use separate drive roots like
-`C:` and `D:`. Everything is organized below `/`.
-fileciteturn0file0L8-L12
 
 ------------------------------------------------------------------------
 
-# 2. `/` vs `/root`
+## 3. Navigation & Directories
 
-These are **not the same thing**.
+### `pwd`
 
-``` text
-/
-│
-├── bin
-├── etc
-├── home
-├── var
-└── root
-     └── root user's home directory
-```
-
-  Path      Meaning
-  --------- -------------------------------------------------
-  `/`       Root directory --- top of the entire filesystem
-  `/root`   Home directory of the `root` superuser
-
-`/` contains the complete filesystem hierarchy, while `/root` is simply
-the root user's personal home directory. fileciteturn0file0L13-L23
-
-------------------------------------------------------------------------
-
-# 3. Linux File System Hierarchy (FHS)
-
-Understanding where files belong is essential when working with Linux
-servers. fileciteturn0file0L24-L25
-
-``` text
-/
-├── /bin       → Essential user commands
-├── /boot      → Bootloader + kernel files
-├── /dev       → Device nodes
-├── /etc       → Configuration
-├── /home      → Normal users' home directories
-├── /mnt       → Mount points
-├── /tmp       → Temporary files
-├── /var       → Variable data
-│   └── /log   → System/application logs
-└── /root      → Root user's home
-```
-
-## Directory Cheat Sheet
-
-  -----------------------------------------------------------------------
-  Directory                           Purpose
-  ----------------------------------- -----------------------------------
-  `/`                                 Root of the entire filesystem
-
-  `/bin`                              Essential user binary commands such
-                                      as `ls`, `cd`, `cp`, `systemctl`
-
-  `/boot`                             Bootloader files, kernel images,
-                                      and hardware startup files
-
-  `/etc`                              System configuration files
-
-  `/home`                             Personal home directories for
-                                      normal users
-
-  `/tmp`                              Temporary files
-
-  `/var`                              Variable data
-
-  `/var/log`                          Application and system logs
-
-  `/mnt`                              Mount point for external storage,
-                                      partitions, or network shares
-
-  `/dev`                              Device nodes representing
-                                      physical/virtual hardware
-  -----------------------------------------------------------------------
-
-Examples mentioned in the guide:
-
-``` text
-/etc/passwd       → User information
-/etc/group        → Group information
-/etc/os-release   → OS release information
-/home/ubuntu      → User's home directory
-/var/log          → Logs
-```
-
-The guide notes that `/tmp` contains temporary files and is cleared
-automatically on system reboot, and that `/var/log` is important for
-debugging. fileciteturn0file0L29-L52
-
-------------------------------------------------------------------------
-
-# 4. Navigation & Listing
-
-## `ls`
-
-Lists directory contents.
-
-``` bash
-ls
-```
-
-### Useful options
-
-``` bash
-ls -a
-```
-
-`-a` → show hidden files.
-
-``` bash
-ls -l
-```
-
-`-l` → long/listing format.
-
-``` bash
-ls -la
-```
-
-`-l` + `-a` → long format + hidden files.
-
-## `cd`
-
-Changes the current working directory.
-
-``` bash
-cd /etc
-```
-
-Go up one directory:
-
-``` bash
-cd ..
-```
-
-## `pwd`
-
-Prints the current working directory as an absolute path.
+Print the current working directory.
 
 ``` bash
 pwd
 ```
 
-Example:
+### `ls`
 
-``` text
-/home/ubuntu
+List directory contents.
+
+``` bash
+ls
+ls -l
+ls -a
+ls -la
 ```
 
-The guide introduces `ls`, `cd`, and `pwd` as the basic
-navigation/listing commands. fileciteturn0file0L53-L57
+To list the contents of a child directory while staying in the current
+directory:
+
+``` bash
+ls child
+```
+
+`ls child` shows **only the contents of `child`**, not files from the
+parent/current directory.
+
+``` text
+parent/
+├── parent.txt
+└── child/
+    ├── file1.txt
+    └── file2.txt
+```
+
+``` bash
+ls child
+# file1.txt  file2.txt
+```
+
+### `cd`
+
+Change directory.
+
+``` bash
+cd child
+cd ..
+cd ~
+cd /
+```
+
+### `mkdir`
+
+Create a directory.
+
+``` bash
+mkdir project
+mkdir dir1 dir2
+mkdir -p parent/child/grandchild
+```
 
 ------------------------------------------------------------------------
 
-# 5. Creating Files
+## 4. File Creation & Editing
 
-The guide gives four common ways to create a file.
+### `touch`
 
-## 1. `touch`
-
-``` bash
-touch file.txt
-```
-
-Creates an empty file.
-
-Multiple files:
+Create empty files or update timestamps.
 
 ``` bash
-touch data{1..10}.txt
+touch data.txt
 ```
 
-Creates:
+Create multiple files:
+
+``` bash
+touch data1 data2 data3
+touch data{1..10}
+```
+
+> `touch` is especially useful for creating multiple files in one
+> command.
+
+### `cat`
+
+Display file contents.
+
+``` bash
+cat data.txt
+```
+
+Create/write a file:
+
+``` bash
+cat > data.txt
+```
+
+Append to a file:
+
+``` bash
+cat >> data.txt
+```
+
+Display contents of files inside a directory:
+
+``` bash
+cat child/*
+```
+
+### `nano`
+
+Terminal text editor.
+
+``` bash
+nano data.txt
+```
+
+> **Don't memorize the `nano` shortcuts.** The operation/help box is
+> already displayed at the bottom of the editor.
+
+Common operations shown there include:
 
 ``` text
-data1.txt
-data2.txt
-...
-data10.txt
+Ctrl + O → Save
+Ctrl + X → Exit
+Ctrl + W → Search
+Ctrl + K → Cut line
+Ctrl + U → Paste
 ```
 
-## 2. `nano`
+### `vim`
+
+Advanced terminal text editor.
 
 ``` bash
-nano file.txt
+vim data.txt
 ```
 
-Simple terminal text editor.
+### Quick difference
 
-## 3. `vi`
-
-``` bash
-vi file.txt
-```
-
-Standard terminal text editor.
-
-## 4. Redirection
-
-``` bash
-echo "Hello" > file.txt
-```
-
-Creates the file and writes content to it.
-
-The guide lists these four methods explicitly.
-fileciteturn0file0L58-L63
+  Command   Main purpose                   Interactive editing
+  --------- ------------------------------ ---------------------
+  `touch`   Create empty files             No
+  `cat`     Read/write file contents       No
+  `nano`    Edit files interactively       Yes
+  `vim`     Advanced interactive editing   Yes
 
 ------------------------------------------------------------------------
 
-# 6. Copying, Moving & Deleting
+## 5. Copy, Move & Remove
 
-## `cp`
+### `cp`
 
-Copy a file:
+Copy files or directories.
 
 ``` bash
-cp source.txt destination.txt
+cp file.txt backup/
+cp file.txt newfile.txt
 ```
 
-Copy a directory recursively:
+Copy a directory:
 
 ``` bash
-cp -r dir1 dir2
+cp -r source/ destination/
 ```
 
-`-r` → recursive.
+`-r` is required when the **source itself is a directory**.
 
-## `mv`
+### Copy only directory contents
 
-Move a file:
+If you don't want to copy the source folder itself, but only its
+contents:
 
 ``` bash
-mv file.txt /tmp/
+cp source/* destination/
 ```
 
-Rename a file:
+If the contents include subdirectories:
 
 ``` bash
+cp -r source/* destination/
+```
+
+> `source/*` normally does not include hidden files.
+
+### Copy into a new directory
+
+``` bash
+cp -r source/ destination/new/
+```
+
+This copies the `source` directory into `new`.
+
+To copy only the contents into `new`:
+
+``` bash
+cp -r source/* destination/new/
+```
+
+### `mv`
+
+Move or rename files/directories.
+
+``` bash
+mv file.txt backup/
 mv old.txt new.txt
 ```
 
-## `rm`
+### `rm`
 
-Delete a file:
+Remove files.
 
 ``` bash
 rm file.txt
 ```
 
-## `rmdir`
-
-Remove an empty directory:
+Remove a directory and its contents:
 
 ``` bash
-rmdir mydir
+rm -r directory/
 ```
 
-## `rm -rf`
-
-Force recursive deletion:
+Force removal:
 
 ``` bash
-rm -rf mydir
+rm -rf directory/
 ```
 
--   `-r` → recursive
--   `-f` → force
-
-**Be extremely careful with `rm -rf`.**
-
-The guide covers `cp`, `mv`, `rm`, `rmdir`, and recursive deletion.
-fileciteturn0file0L64-L67
+> Use `rm -rf` carefully. Deleted files normally do not go to a recycle
+> bin.
 
 ------------------------------------------------------------------------
 
-# 7. File Content & Redirection
+## 6. File Viewing & Search
 
-## `>`
-
-Redirects output to a file and **overwrites** existing content.
-
-``` bash
-echo "First Line" > file.txt
-```
-
-``` text
-Command
-   │
-   ▼
-echo "First Line"
-   │
-   │ >
-   ▼
-file.txt
-```
-
-## `>>`
-
-Redirects output and **appends** to the file.
-
-``` bash
-echo "Second Line" >> file.txt
-```
-
-``` text
-Existing content
-      +
-Second Line
-      ↓
-file.txt
-```
-
-### Remember
-
-``` text
->    → overwrite
->>   → append
-```
-
-The guide explicitly distinguishes these two redirection operators.
-fileciteturn0file0L70-L79
+  Command   Purpose               Example
+  --------- --------------------- ------------------------
+  `cat`     View file             `cat file.txt`
+  `less`    View large files      `less /var/log/syslog`
+  `more`    Page through a file   `more file.txt`
+  `head`    View beginning        `head -n 10 file.txt`
+  `tail`    View end              `tail -n 100 file.txt`
+  `grep`    Search inside files   `grep ERROR file.txt`
 
 ------------------------------------------------------------------------
 
-# 8. `cat`
+## 7. `man` --- Manual Pages
 
-Display a file:
+`man` displays the manual/documentation for a command.
 
 ``` bash
-cat file.txt
+man cp
+man touch
+man cat
 ```
+
+Useful inside `man`:
+
+``` text
+Space    → Next page
+Enter    → Scroll one line
+b        → Previous page
+/word    → Search
+n        → Next search result
+q        → Quit
+```
+
+Use `man` to check options when you are unsure about a command.
 
 Example:
 
 ``` bash
-cat /etc/passwd
-```
-
-`cat` sends the file's contents to standard output (the terminal by
-default). fileciteturn0file0L80-L80
-
-------------------------------------------------------------------------
-
-# 9. `head`
-
-Shows the first 10 lines of a file by default.
-
-``` bash
-head docker.txt
+man cp
 ```
 
 ------------------------------------------------------------------------
 
-# 10. `tail`
+## 8. `sudo`
 
-Shows the last 10 lines by default.
-
-``` bash
-tail docker.txt
-```
-
-Very useful for logs:
+`sudo` allows a user to execute a command with elevated/root privileges.
 
 ``` bash
-tail -f /var/log/syslog
+sudo <command>
 ```
 
-`-f` → follow the file as it changes.
+Examples:
 
-This is particularly useful when monitoring logs in real time.
-fileciteturn0file0L81-L85
+``` bash
+sudo apt update
+sudo touch /root/test.txt
+```
+
+> `sudo` is a **permission/elevation command**, not a file creation or
+> editing command.
 
 ------------------------------------------------------------------------
 
-# 11. `grep`
+## 9. Processes & Services
 
-Searches text for a pattern.
-
-``` bash
-grep -i "engine" docker.txt
-```
-
-`-i` → case-insensitive search.
-
-You can combine commands using a pipe:
-
-``` bash
-cat docker.txt | grep -i "engine"
-```
-
-``` text
-cat docker.txt
-      │
-      ▼
-    pipe |
-      │
-      ▼
-grep -i "engine"
-      │
-      ▼
-matching lines
-```
-
-The guide uses `grep -i` and explains that `-i` makes the search
-case-insensitive. fileciteturn0file0L86-L91
-
-------------------------------------------------------------------------
-
-# 12. Pipes `|`
-
-A pipe sends the output of one command into another command.
-
-``` bash
-command1 | command2
-```
-
-Example:
-
-``` bash
-history | grep "systemctl"
-```
-
-``` text
-history
-   │
-   │ output
-   ▼
-  | pipe
-   │
-   ▼
-grep "systemctl"
-   │
-   ▼
-matching commands
-```
-
-------------------------------------------------------------------------
-
-# 13. `history`
-
-Shows recently executed terminal commands.
-
-``` bash
-history
-```
-
-Search history:
-
-``` bash
-history | grep "systemctl"
-```
-
-The guide highlights `history` as useful for tracing commands executed
-during troubleshooting incidents. fileciteturn0file0L92-L96
-
-------------------------------------------------------------------------
-
-# 14. Linux File Permissions
-
-Run:
-
-``` bash
-ls -l
-```
-
-You may see:
-
-``` text
--rw-r--r--
-```
-
-This is a 10-character permission representation.
-
-``` text
--rw-r--r--
-│││ │││ │││
-│││ │││ ││└── Others
-│││ │││ └───── Others
-│││ ││└─────── Others
-│││ └───────── Group
-││└─────────── Group
-│└──────────── Group
-└───────────── File type
-```
-
-The permission groups are:
-
-``` text
-Owner        Group        Others
-  │            │            │
- rw-          r--          r--
-```
-
-------------------------------------------------------------------------
-
-# 15. Permission Symbols
-
-  Permission   Symbol     Value
-  ------------ -------- -------
-  Read         `r`            4
-  Write        `w`            2
-  Execute      `x`            1
-
-The octal values come from binary bit positions:
-
-``` text
-r = 2² = 4
-w = 2¹ = 2
-x = 2⁰ = 1
-```
-
-The guide presents this mapping explicitly.
-fileciteturn0file0L97-L110
-
-------------------------------------------------------------------------
-
-# 16. Octal Permission Math
-
-For each category, add the permission values.
-
-``` text
-rwx = 4 + 2 + 1 = 7
-rw- = 4 + 2 + 0 = 6
-r-x = 4 + 0 + 1 = 5
-r-- = 4 + 0 + 0 = 4
--wx = 0 + 2 + 1 = 3
--w- = 0 + 2 + 0 = 2
---x = 0 + 0 + 1 = 1
---- = 0 + 0 + 0 = 0
-```
-
-Example:
-
-``` text
--rwxr-xr--
-  │   │   │
-  │   │   └── 4
-  │   └────── 5
-  └────────── 7
-
-chmod 754
-```
-
-------------------------------------------------------------------------
-
-# 17. `chmod`
-
-Changes file permissions.
-
-## `chmod 777`
-
-``` bash
-chmod 777 file
-```
-
-``` text
-rwx rwx rwx
- 7   7   7
-```
-
-Everyone has read, write, and execute access.
-
-## `chmod 755`
-
-``` bash
-chmod 755 file
-```
-
-``` text
-rwx r-x r-x
- 7   5   5
-```
-
-Owner → full access\
-Group → read + execute\
-Others → read + execute
-
-The guide identifies this as a standard mode for scripts.
-
-## `chmod 644`
-
-``` bash
-chmod 644 file
-```
-
-``` text
-rw- r-- r--
- 6   4   4
-```
-
-Owner → read + write\
-Group → read\
-Others → read
-
-The guide identifies this as a standard mode for data files.
-
-## `chmod 616`
-
-``` bash
-chmod 616 file
-```
-
-``` text
-rw- -wx rw-
- 6   1   6
-```
-
-Owner → read + write\
-Group → execute\
-Others → read + write
-
-The guide lists these common permission examples.
-fileciteturn0file0L111-L118
-
-------------------------------------------------------------------------
-
-# 18. Permission Mental Model
-
-``` text
-                chmod 754
-                    │
-       ┌────────────┼────────────┐
-       ▼            ▼            ▼
-     Owner        Group        Others
-       7            5             4
-       │            │             │
-     rwx          r-x           r--
-       │            │             │
-   4+2+1        4+0+1         4+0+0
-```
-
-------------------------------------------------------------------------
-
-# 19. Process Management
-
-A **process** is a running program.
-
-``` text
-Program
-   │
-   │ execute
-   ▼
-Process
-   │
-   ├── PID
-   ├── CPU usage
-   ├── Memory
-   └── resources
-```
-
-## `ps`
-
-Shows a snapshot of active processes.
+### Processes
 
 ``` bash
 ps
-```
-
-The guide describes it as a process snapshot for the active terminal
-session. fileciteturn0file0L119-L124
-
-## `top`
-
-Interactive real-time resource monitor.
-
-``` bash
+ps aux
 top
 ```
 
-Shows information such as:
-
--   CPU usage
--   RAM usage
--   PID
--   Load average
--   Running processes
-
-## `kill`
-
-Terminates a process using its PID.
+### Kill a process
 
 ``` bash
-kill 1000
+kill 1234
+kill -9 1234
 ```
 
-## `pkill`
-
-Terminates processes by name.
+### Services
 
 ``` bash
-pkill nginx
+systemctl status nginx
+systemctl restart nginx
 ```
 
 ------------------------------------------------------------------------
 
-# 20. System Status Commands
+## 10. Networking
 
-``` bash
-uptime
-```
-
-Shows how long the system has been running and system load information.
-
-``` bash
-whoami
-```
-
-Shows the current user.
-
-``` bash
-date
-```
-
-Shows the current date/time.
-
-The guide groups these as basic system-status utility commands.
-fileciteturn0file0L119-L124
+  Command      Purpose                         Example
+  ------------ ------------------------------- -------------------------------------
+  `ping`       Check connectivity              `ping google.com`
+  `ip a`       Show IP/network configuration   `ip a`
+  `ifconfig`   Network configuration           `ifconfig`
+  `netstat`    Network connections             `netstat -tulnp`
+  `curl`       Fetch URL data                  `curl https://api.github.com`
+  `wget`       Download files                  `wget https://example.com/file.zip`
 
 ------------------------------------------------------------------------
 
-# 21. Networking Commands
+## 11. Permissions & Ownership
 
-## `ping`
+### `chmod`
 
-Tests network reachability and packet loss.
+Change file permissions.
 
 ``` bash
-ping <IP>
+chmod 755 script.sh
 ```
 
-Example:
+### `chown`
+
+Change file ownership.
 
 ``` bash
-ping 8.8.8.8
+chown user:group file.txt
 ```
 
 ------------------------------------------------------------------------
 
-## `ifconfig`
+## 12. Package Management
 
-Displays IP addresses and network interfaces.
+### Ubuntu/Debian
 
 ``` bash
-ifconfig
+sudo apt update
+sudo apt upgrade -y
+sudo apt install nginx -y
 ```
 
-`ifconfig` is a traditional utility.
+### RHEL/CentOS
+
+``` bash
+sudo yum install nginx -y
+```
 
 ------------------------------------------------------------------------
 
-## `ip a`
+## 13. Disk & Storage
 
-Modern way to view network interfaces and IP addresses.
+### `df`
 
-``` bash
-ip a
-```
-
-``` text
-Machine
-  │
-  └── Network interfaces
-       ├── IP address
-       ├── MAC address
-       └── interface state
-```
-
-The guide lists both `ifconfig` and `ip a`.
-fileciteturn0file0L125-L130
-
-------------------------------------------------------------------------
-
-## `curl`
-
-Transfers data from/to a server, commonly using HTTP/HTTPS.
-
-``` bash
-curl <URL>
-```
-
-Example:
-
-``` bash
-curl https://example.com
-```
-
-Useful for testing APIs and HTTP services.
-
-------------------------------------------------------------------------
-
-# 22. `systemctl` --- Service Management
-
-`systemctl` is used to control system services.
-
-Example with Docker:
-
-``` bash
-sudo systemctl start docker
-```
-
-Start a service:
-
-``` bash
-sudo systemctl start docker
-```
-
-Stop:
-
-``` bash
-sudo systemctl stop docker
-```
-
-Restart:
-
-``` bash
-sudo systemctl restart docker
-```
-
-Enable:
-
-``` bash
-sudo systemctl enable docker
-```
-
-### Service lifecycle
-
-``` text
-             docker.service
-                    │
-       ┌────────────┼────────────┐
-       ▼            ▼            ▼
-     start         stop        restart
-       │            │            │
-       ▼            ▼            ▼
-   Running       Stopped      Restarted
-```
-
-`enable` configures the service to start automatically according to the
-system's service configuration. fileciteturn0file0L131-L135
-
-------------------------------------------------------------------------
-
-# 23. Disk Storage
-
-## `df -h`
-
-Shows filesystem disk capacity across mounted filesystems.
+Show filesystem/disk usage.
 
 ``` bash
 df -h
 ```
 
-`-h` → human-readable sizes.
+### `du`
 
-``` text
-Filesystem
-    │
-    ├── Size
-    ├── Used
-    ├── Available
-    └── Use%
-```
-
-## `du -sh`
-
-Shows space consumed by a directory.
+Show file/directory size.
 
 ``` bash
 du -sh /var/log
 ```
 
-Options:
-
--   `-s` → summary
--   `-h` → human-readable
-
-``` text
-/var/log
-   │
-   ▼
-du -sh
-   │
-   ▼
-Total space used
-```
-
-The guide distinguishes `df` for filesystem capacity from `du` for
-directory usage. fileciteturn0file0L136-L140
-
 ------------------------------------------------------------------------
 
-# 24. Users & Groups
+## 14. Scheduling & Background Jobs
 
-Linux uses users and groups to control identity and permissions.
+### `crontab`
 
-``` text
-User
- │
- ├── UID
- ├── Primary Group
- └── Supplementary Groups
-```
-
-## `useradd`
-
-Create a user:
+Edit cron jobs:
 
 ``` bash
-sudo useradd <user>
+crontab -e
 ```
 
-## `userdel -r`
+Example --- run daily at 2 AM:
 
-Delete a user and remove their home directory/files associated with the
-deletion option:
+``` cron
+0 2 * * * /home/user/backup.sh
+```
+
+### `nohup`
+
+Run a command in the background so it can continue after logout:
 
 ``` bash
-sudo userdel -r <user>
-```
-
-`-r` → remove the user's home directory and mail spool where applicable.
-
-## `passwd`
-
-Set/change a user's password:
-
-``` bash
-sudo passwd <user>
-```
-
-## `groupadd`
-
-Create a group:
-
-``` bash
-sudo groupadd <group>
-```
-
-## `usermod -aG`
-
-Add a user to a supplementary group:
-
-``` bash
-sudo usermod -aG <group> <user>
-```
-
-Important options:
-
-``` text
--a → append
--G → supplementary groups
-```
-
-The guide lists these user/group administration commands.
-fileciteturn0file0L141-L144
-
-------------------------------------------------------------------------
-
-# 25. Key Commands --- Quick Revision
-
-## Filesystem
-
-``` bash
-ls
-ls -a
-ls -l
-ls -la
-cd <path>
-cd ..
-pwd
-touch file
-nano file
-vi file
-cat file
-cp source destination
-cp -r dir1 dir2
-mv old new
-rm file
-rmdir dir
-rm -rf dir
-```
-
-## File content/search
-
-``` bash
-cat file
-head file
-tail file
-tail -f file
-grep -i "text" file
-history
-history | grep "text"
-```
-
-## Redirection
-
-``` bash
-echo "text" > file
-echo "text" >> file
-```
-
-``` text
->   → overwrite
->>  → append
-|   → pipe output into another command
-```
-
-## Permissions
-
-``` bash
-ls -l
-chmod 777 file
-chmod 755 file
-chmod 644 file
-```
-
-``` text
-r = 4
-w = 2
-x = 1
-```
-
-## Processes
-
-``` bash
-ps
-top
-kill <PID>
-pkill <name>
-uptime
-whoami
-date
-```
-
-## Networking
-
-``` bash
-ping <IP>
-ifconfig
-ip a
-curl <URL>
-```
-
-## Services
-
-``` bash
-sudo systemctl start docker
-sudo systemctl stop docker
-sudo systemctl restart docker
-sudo systemctl enable docker
-```
-
-## Disk
-
-``` bash
-df -h
-du -sh /var/log
-```
-
-## Users/groups
-
-``` bash
-sudo useradd <user>
-sudo userdel -r <user>
-sudo passwd <user>
-sudo groupadd <group>
-sudo usermod -aG <group> <user>
+nohup python3 app.py &
 ```
 
 ------------------------------------------------------------------------
 
-# 26. High-Level Linux Mental Model
+## 15. User Management
 
-``` text
-                         LINUX
-                           │
-            ┌──────────────┴──────────────┐
-            │                             │
-       FILESYSTEM                       PROCESSES
-            │                             │
-       ┌────┼────┐                   ┌────┼────┐
-       │    │    │                   │    │    │
-      /etc /home /var                ps   top  kill
-       │         │
-       │       /var/log
-       │
-       └── Configuration
+  Command                 Purpose
+  ----------------------- -----------------------------------
+  `adduser`               Add a user
+  `useradd`               Create user non-interactively
+  `usermod`               Modify user account
+  `passwd`                Change password
+  `id`                    Show UID/GID/groups
+  `groups`                Show user's groups
+  `deluser` / `userdel`   Delete user
+  `who`                   List logged-in users
+  `w`                     Show logged-in users and activity
+  `last`                  Show login history
 
-            │
-            ▼
-        PERMISSIONS
-            │
-       ┌────┼────┐
-       │    │    │
-       u    g    o
-       │    │    │
-      rwx  rwx  rwx
-       │    │    │
-       └────┼────┘
-            │
-          chmod
-```
-
-------------------------------------------------------------------------
-
-# 27. DevOps Troubleshooting Flow
-
-A useful way to connect these commands is:
-
-``` text
-                 Something is wrong
-                         │
-          ┌──────────────┼──────────────┐
-          ▼              ▼              ▼
-       Process         Network         Disk
-          │              │              │
-         ps             ip a           df -h
-         top            ping           du -sh
-         kill           curl
-          │              │
-          └──────────────┼──────────────┘
-                         ▼
-                       Logs
-                         │
-                      /var/log
-                         │
-                    cat / tail
-                         │
-                       grep
-```
-
-------------------------------------------------------------------------
-
-# 28. AWS Practice Warning
-
-When practicing Linux on AWS EC2 Free Tier instances, the guide
-recommends stopping or terminating instances after finishing to avoid
-unnecessarily consuming the available monthly quota.
-fileciteturn0file0L145-L147
-
-------------------------------------------------------------------------
-
-# 29. Core Commands to Memorize First
-
-Don't try to memorize everything at once.
-
-Start with these:
+Examples:
 
 ``` bash
-pwd
-ls
-cd
-mkdir
-touch
-cat
-cp
-mv
-rm
-head
-tail
-grep
-history
-ps
-top
-kill
-ip a
-ping
-curl
-df -h
-du -sh
-chmod
-whoami
-systemctl
+sudo adduser devops
+sudo useradd -m -s /bin/bash devuser
+sudo usermod -aG sudo devops
+sudo passwd devops
+id devops
+groups devops
 ```
 
-Then learn the options (`-a`, `-l`, `-r`, `-f`, `-h`, `-i`, `-s`, `-G`,
-etc.) as you encounter them.
+------------------------------------------------------------------------
+
+## 16. Useful Terminal Shortcuts
+
+  Shortcut     Purpose
+  ------------ -------------------------------------
+  `!!`         Run the last command again
+  `!n`         Run command number `n` from history
+  `Ctrl + C`   Cancel/interrupt running command
+  `Ctrl + L`   Clear terminal screen
+
+------------------------------------------------------------------------
+
+## Quick Mental Model
+
+``` text
+Navigation
+├── pwd
+├── ls
+├── cd
+└── mkdir
+
+Files
+├── touch  → create
+├── cat    → read/write
+├── nano   → edit
+├── vim    → advanced edit
+├── cp     → copy
+├── mv     → move/rename
+└── rm     → remove
+
+System
+├── ps / top       → processes
+├── systemctl      → services
+├── df / du        → storage
+└── uname / free   → system information
+
+Network
+├── ping
+├── ip
+├── netstat
+├── curl
+└── wget
+
+Permissions
+├── sudo
+├── chmod
+└── chown
+```
